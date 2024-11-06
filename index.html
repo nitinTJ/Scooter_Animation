@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scooter Animation with Pollution Reduction</title>
+  <style>
+    /* Basic Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f4f8;
+      overflow-x: hidden;
+      height: 200vh; /* Extend height for scrolling */
+    }
+
+    .container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Cityscape Background */
+    .background {
+      position: absolute;
+      top: 50%;
+      width: 100%;
+      height: 400px;
+      background: url("./bg.jpg.jpg") repeat-x;
+      background-size: cover;
+      transform: translateY(-50%);
+      z-index: 1;
+    }
+
+    /* Pollution overlays */
+    .pollution-overlay {
+      position: absolute;
+      top: 50%;
+      width: 100%;
+      height: 400px;
+      transform: translateY(-50%);
+      z-index: 2;
+      opacity: 1; /* Fully opaque initially */
+      transition: opacity 0.2s ease;
+    }
+
+    .pollution-grey {
+      background-color: rgba(128, 128, 128, 0.536);
+      opacity: 1;
+    }
+
+    .pollution-green {
+      background-color: green;
+      opacity: 0; /* Start fully transparent */
+    }
+
+    /* Cool Text */
+    .cool-text {
+      position: absolute;
+      top: 60%;
+      left: 50%;
+      transform: translateX(-50%) translateY(-50%);
+      font-size: 48px;
+      font-weight: bold;
+      color: white;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+      z-index: 3;
+      text-transform: uppercase;
+    }
+
+    /* Scooter Container */
+    .scooter-container {
+      position: absolute;
+      width: 220px;
+      height: auto;
+      z-index: 3;
+      transition: transform 0.2s ease-out;
+      transform: translateX(-500px);
+      top: 300px;
+    }
+
+    .scooter {
+      position: relative;
+      width: 100%;
+    }
+
+    .scooter img {
+      width: 100%;
+    }
+
+    /* Wheels */
+    .wheel {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background-color: black;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: transform 0.1s ease-out;
+    }
+
+    .front-wheel {
+      left: 69px;
+      top: 150px;
+    }
+
+    .back-wheel {
+      right: -17px;
+      top: 149px;
+    }
+
+    /* Spokes */
+    .spoke {
+      position: absolute;
+      width: 2px;
+      height: 28px;
+      background-color: #ffffff;
+    }
+
+    /* Position spokes evenly in the wheels */
+    .spoke:nth-child(1) {
+      transform: rotate(0deg);
+    }
+    .spoke:nth-child(2) {
+      transform: rotate(45deg);
+    }
+    .spoke:nth-child(3) {
+      transform: rotate(90deg);
+    }
+    .spoke:nth-child(4) {
+      transform: rotate(135deg);
+    }
+
+  </style>
+</head>
+<body>
+  <div>
+      <h1>SCOOTER DEMO</h1>
+  </div>
+  <div class="container">
+    <!-- Background Cityscape -->
+    <div class="background"></div>
+    <!-- Pollution Overlays -->
+    <div class="pollution-overlay pollution-grey"></div>
+    <div class="pollution-overlay pollution-green"></div>
+
+    <!-- Cool Text for Go EV Transition -->
+    <div class="cool-text">Go EV!</div>
+
+    <!-- Scooter and Wheels -->
+    <div class="scooter-container">
+      <div class="scooter">
+        <img src="./test.png" alt="Electric Scooter" style="width: 300px" />
+        <div class="wheel front-wheel">
+          <div class="spoke"></div>
+          <div class="spoke"></div>
+        </div>
+        <div class="wheel back-wheel">
+          <div class="spoke"></div>
+          <div class="spoke"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let lastScrollY = window.scrollY;
+    let isInContainerView = false;
+
+    // Observe the container to detect when it enters/exits the viewport
+    const container = document.querySelector(".container");
+    const greyOverlay = document.querySelector(".pollution-grey");
+    const greenOverlay = document.querySelector(".pollution-green");
+    const coolText = document.querySelector(".cool-text");
+    const scooterContainer = document.querySelector(".scooter-container");
+    const frontWheel = document.querySelector(".front-wheel");
+    const backWheel = document.querySelector(".back-wheel");
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            isInContainerView = true;
+          } else {
+            isInContainerView = false;
+            stopWheelAnimation(); // Stop the wheel rotation when out of view
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(container);
+
+    function stopWheelAnimation() {
+      frontWheel.style.transform = "rotate(0deg)";
+      backWheel.style.transform = "rotate(0deg)";
+      const spokes = document.querySelectorAll('.spoke');
+      spokes.forEach(spoke => {
+        spoke.style.transform = `rotate(0deg)`; // Reset spokes to initial position
+      });
+    }
+
+    function handleScroll() {
+      if (!isInContainerView) return; // Only animate if the container is in view
+
+      const currentScrollY = window.scrollY;
+
+      // Calculate the wheel rotation based on scroll position
+      const rotationAmount = (currentScrollY - lastScrollY) * 0.1; // Adjust 0.1 to control the speed of rotation
+
+      // Rotate the wheels by calculating the degree of rotation
+      const frontWheelRotation = parseFloat(frontWheel.style.transform.replace('rotate(', '').replace('deg)', '') || 0) + rotationAmount;
+      const backWheelRotation = parseFloat(backWheel.style.transform.replace('rotate(', '').replace('deg)', '') || 0) + rotationAmount;
+
+      frontWheel.style.transform = `rotate(${frontWheelRotation}deg)`;
+      backWheel.style.transform = `rotate(${backWheelRotation}deg)`;
+
+      // Rotate each spoke based on the wheel's rotation
+      const spokes = document.querySelectorAll('.spoke');
+      spokes.forEach(spoke => {
+        spoke.style.transform = `rotate(${frontWheelRotation}deg)`; // Apply the same rotation to all spokes
+      });
+
+      // Move the scooter based on scroll position
+      const movement = Math.min(currentScrollY / 0.41, window.innerWidth - 220);
+      scooterContainer.style.transform = `translateX(${movement}px)`;
+
+      // Adjust overlay opacity to simulate pollution reduction
+      const pollutionLevel = Math.min(movement / (window.innerWidth - 220), 1);
+      greyOverlay.style.opacity = 1 - pollutionLevel; // Decrease grey as pollution reduces
+      greenOverlay.style.opacity = pollutionLevel; // Increase green as pollution reduces
+
+      // Show "Go EV!" text when pollution background turns green
+      if (pollutionLevel > 0.5) {
+        coolText.style.opacity = 1; // Make text visible
+      } else {
+        coolText.style.opacity = 0; // Hide text
+      }
+
+      lastScrollY = currentScrollY;
+    }
+
+    // Listen to scroll event
+    window.addEventListener("scroll", () => {
+      requestAnimationFrame(handleScroll);
+    });
+  </script>
+</body>
+</html>
